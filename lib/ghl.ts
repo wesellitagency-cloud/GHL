@@ -34,6 +34,50 @@ export interface ContactsResponse {
   };
 }
 
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject?: string;
+  body?: string;
+  locationId?: string;
+  dateAdded?: string;
+  dateUpdated?: string;
+}
+
+export async function createEmailTemplate(
+  locationId: string,
+  apiKey: string,
+  template: {
+    name: string;
+    subject: string;
+    body: string;
+  }
+): Promise<EmailTemplate> {
+  const res = await fetch(
+    `${GHL_BASE_URL}/locations/${locationId}/emails/builder`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Version: GHL_API_VERSION,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: template.name,
+        subject: template.subject,
+        body: template.body,
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`GHL API error ${res.status}: ${body}`);
+  }
+
+  return res.json();
+}
+
 export async function fetchContacts(
   locationId: string,
   apiKey: string,
