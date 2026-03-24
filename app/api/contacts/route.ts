@@ -14,11 +14,11 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const limit = Number(searchParams.get("limit") ?? 20);
-  const skip = Number(searchParams.get("skip") ?? 0);
+  const startAfterId = searchParams.get("startAfterId") ?? undefined;
   const query = searchParams.get("query") ?? undefined;
 
   try {
-    const data = await fetchContacts(locationId, apiKey, { limit, skip, query });
+    const data = await fetchContacts(locationId, apiKey, { limit, startAfterId, query });
     return NextResponse.json(data);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

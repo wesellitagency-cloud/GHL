@@ -39,17 +39,18 @@ export async function fetchContacts(
   apiKey: string,
   options: {
     limit?: number;
-    skip?: number;
+    startAfterId?: string;
     query?: string;
   } = {}
 ): Promise<ContactsResponse> {
-  const { limit = 20, skip = 0, query } = options;
+  const { limit = 20, startAfterId, query } = options;
 
   const params = new URLSearchParams({
     locationId,
     limit: String(limit),
-    skip: String(skip),
   });
+
+  if (startAfterId) params.set("startAfterId", startAfterId);
 
   if (query) params.set("query", query);
 

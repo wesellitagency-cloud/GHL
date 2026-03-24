@@ -64,17 +64,23 @@ function ContactCard({ contact }: { contact: GHLContact }) {
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<GHLContact[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(0);
+  const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
+  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
+  const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([]);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pageIndex, setPageIndex] = useState(0);
 
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-      setPage(0);
+      setCurrentCursor(undefined);
+      setNextCursor(undefined);
+      setCursorHistory([]);
+      setPageIndex(0);
     }, 400);
     return () => clearTimeout(timer);
   }, [query]);
@@ -85,8 +91,8 @@ export default function ContactsPage() {
     try {
       const params = new URLSearchParams({
         limit: String(PAGE_SIZE),
-        skip: String(page * PAGE_SIZE),
       });
+      if (currentCursor) params.set("startAfterId", currentCursor);
       if (debouncedQuery) params.set("query", debouncedQuery);
 
       const res = await fetch(`/api/contacts?${params}`);
@@ -96,18 +102,35 @@ export default function ContactsPage() {
 
       setContacts(data.contacts ?? []);
       setTotal(data.meta?.total ?? 0);
+      setNextCursor(data.meta?.startAfterId ?? undefined);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedQuery]);
+  }, [currentCursor, debouncedQuery]);
 
   useEffect(() => {
     fetchPage();
   }, [fetchPage]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const goNext = () => {
+    setCursorHistory((prev) => [...prev, currentCursor]);
+    setCurrentCursor(nextCursor);
+    setPageIndex((p) => p + 1);
+  };
+
+  const goPrev = () => {
+    setCursorHistory((prev) => {
+      const newHistory = [...prev];
+      const prevCursor = newHistory.pop();
+      setCurrentCursor(prevCursor);
+      return newHistory;
+    });
+    setPageIndex((p) => Math.max(0, p - 1));
+  };
 
   return (
     <div className="min-h-screen">
@@ -181,18 +204,18 @@ export default function ContactsPage() {
             {totalPages > 1 && (
               <div className="mt-8 flex items-center justify-between">
                 <button
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  disabled={page === 0}
+                  onClick={goPrev}
+                  disabled={pageIndex === 0}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50"
                 >
                   Previous
                 </button>
                 <span className="text-sm text-gray-600">
-                  Page {page + 1} of {totalPages}
+                  Page {pageIndex + 1} of {totalPages}
                 </span>
                 <button
-                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                  disabled={page >= totalPages - 1}
+                  onClick={goNext}
+                  disabled={!nextCursor || pageIndex >= totalPages - 1}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50"
                 >
                   Next
