@@ -6,9 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync:to-ghl": "ts-node --project tsconfig.scripts.json sync-notion-ghl.ts",
+    "sync:to-notion": "ts-node --project tsconfig.scripts.json sync-ghl-notion.ts",
+    "sync:to-ghl:dry": "ts-node --project tsconfig.scripts.json sync-notion-ghl.ts --dry-run",
+    "sync:to-notion:dry": "ts-node --project tsconfig.scripts.json sync-ghl-notion.ts --dry-run"
   },
   "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "dotenv": "^16.4.5",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18"
@@ -17,6 +23,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "ts-node": "^10.9.2",
     "typescript": "^5",
     "autoprefixer": "^10",
     "postcss": "^8",

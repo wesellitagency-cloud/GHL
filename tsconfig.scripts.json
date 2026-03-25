@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "noEmit": false,
+    "outDir": ".scripts-out",
+    "baseUrl": ".",
+    "paths": { "@/*": ["./*"] }
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true
+  },
+  "include": [
+    "sync-notion-ghl.ts",
+    "sync-ghl-notion.ts",
+    "lib/**/*.ts"
+  ]
+}
